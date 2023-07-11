@@ -1,0 +1,16 @@
+{
+    "DATA_FOLDER" : "data/rust/tests/ui/",
+
+    "EXCLUDED_SUBDIRS" : [
+        "auxiliary",
+        "bad",
+        "did_you_mean",
+        "error-codes",
+        "issues",
+        "rfcs",
+        "span",
+        "suggestions"
+    ],
+    
+    "CODEPARROT_FOLDER" : "data/codeparrot-small"
+} 
