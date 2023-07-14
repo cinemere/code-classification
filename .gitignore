@@ -1,1 +1,6 @@
 data/
+
+# in parser
+parsed_data/
+parsed_data_generalized/
+target/
