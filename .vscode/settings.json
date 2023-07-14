@@ -1,0 +1,10 @@
+//Workspace settings
+{
+    // Hide pycache in the editor
+    "files.exclude": {
+        "**/__pycache__": true
+    },
+
+    // Select python interprether
+    "python.defaultInterpreterPath": "/home/huawei123/kwx1191442/venv/bin/python"
+}

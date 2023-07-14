@@ -3,3 +3,4 @@ matplotlib
 torch
 tensorflow
 transformers
+scikit-learn
