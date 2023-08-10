@@ -1,5 +1,15 @@
-[python-tokenize-library](https://docs.python.org/3/library/tokenize.html#tokenize.generate_tokens)
+# rust code classification
 
+## setup
+```
+git clone https://github.com/cinemere/code-classification
+cd code-classification
+pip install -r requirements.txt
+export PYTHONPATH=$PWD
+python3 src/main.py --help
+```
+
+## repo structure
 ```
 .
 ├── config.json
@@ -31,3 +41,7 @@
 
 15 directories, 11 files
 ```
+
+## minor links
+[python-tokenize-library](https://docs.python.org/3/library/tokenize.html#tokenize.generate_tokens)
+
