@@ -3,7 +3,6 @@ import os
 import glob
 from collections import namedtuple
 import numpy as np
-import torch
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from typing import *
@@ -178,8 +177,7 @@ class BaselineDataset(Dataset):
 
     def make_encodings(self):
         """Prepare label encoder for features and classes"""
-        vocab = self.vocab
-        self.features_encoder = dict([(y, idx + 1) for idx, y in enumerate(vocab)])
+        self.features_encoder = dict([(y, idx + 1) for idx, y in enumerate(self.vocab)])
         classes = self.classes
         self.classes_encoder = dict([(y, idx + 1) for idx, y in enumerate(classes)])
         self.classes_decoder = dict([(idx + 1, y) for idx, y in enumerate(classes)])
@@ -206,6 +204,37 @@ class BaselineDataset(Dataset):
             X.append(encoded_features)
             Y.append(encoded_label)
         return Y, X
+
+    def get_input_train_val(self, traintestsplit : float = 0.7) -> Tuple[List[int], List[Dict[int, int]]]:
+        """Form data to the format needed for liblinear classifier
+
+        from liblinear docs:
+        y: a Python list/tuple/ndarray of l labels (type must be int/double).
+        x: 1. a list/tuple of l training instances. Feature vector of
+           each training instance is a list/tuple or dictionary.
+           2. an l * n numpy ndarray or scipy spmatrix (n: number of features).
+        
+        Output:
+            Y_train (List[int]) : categorical labels
+            X_train (List[Dict[int, int]]) : dictionary of training instances 
+            (example: for feature vector [0, 1, 0, 1] X would be {1 : 1, 3 : 1})
+            Y_val (List[int]) : categorical labels
+            X_val (List[Dict[int, int]]) : dictionary of training instances 
+            (example: for feature vector [0, 1, 0, 1] X would be {1 : 1, 3 : 1})
+        """
+        X_train, Y_train, X_val, Y_val = [], [], [], []
+        for index in tqdm(range(self.__len__())):
+            sample = self.__getitem__(index)
+            encoded_features = {self.features_encoder[t] : 1. for t in sample[0]}
+            encoded_label = self.classes_encoder[sample[1]]
+
+            if np.random.random() < traintestsplit:
+                X_train.append(encoded_features)
+                Y_train.append(encoded_label)
+            else:
+                X_val.append(encoded_features)
+                Y_val.append(encoded_label)    
+        return Y_train, X_train, Y_val, X_val
 
     def decode_predictions(self, predicted_labels: List[int]) -> List[str]:
         """Decode predicted liblinear classifier labels to str format (names of folders)"""
