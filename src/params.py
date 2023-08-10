@@ -15,10 +15,16 @@ LIBLINEAR_PARAMS = "-s 5"                                   # L1-regularization 
 # ----- These arguments are not passed to argparser im main.py -----
 # paths
 PATH_REPO = "/home/huawei123/kwx1991442/code-classification"
+
 PATH_TEST_UI = "data/rust/tests/ui"
-PATH_PARSED_CLASSIFUI = "parser/parsed_data"
+PATH_PARSED_CLASSIFUI             = "parser/parsed_data"
 PATH_PARSED_CLASSIFUI_GENERALIZED = "parser/parsed_data_generalized"
+
 PATH_CODEPARROT = "data/codeparrot-small"
+
+PATH_SAVE_MODEL       = "saved_data/models"
+PATH_SAVE_PREDICTIONS = "saved_data/predictions"
+PATH_SAVE_METRICS     = "saved_data/metrics"
 
 # params of dataloader
 EXCLUDED_SUBDIRS = [

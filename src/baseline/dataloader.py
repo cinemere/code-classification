@@ -116,6 +116,9 @@ class UITestsDataset(Dataset):
             vocab.update(words)
         return sorted(list(vocab))
 
+    @property
+    def filenames(self):
+        return [item.fname for item in self.items]
 
 def tokens2features(tokens, generalized_tokens):
     """Prepare bag of features for each file
@@ -150,6 +153,7 @@ class BaselineDataset(Dataset):
         self.features_encoder = None
         self.classes_encoder = None
         self.classes_decoder = None
+        self.val_idxs = [idx for idx in range(len(self.tokens))]
         if make_encodings:
             self.make_encodings()
 
@@ -174,6 +178,11 @@ class BaselineDataset(Dataset):
             words = self.__getitem__(index)[0]
             vocab.update(words)
         return sorted(list(vocab))
+    
+    @property
+    def filenames(self):
+        filenames = self.tokens.filenames
+        return [filenames[idx] for idx in self.val_idxs]
 
     def make_encodings(self):
         """Prepare label encoder for features and classes"""
@@ -222,7 +231,7 @@ class BaselineDataset(Dataset):
             X_val (List[Dict[int, int]]) : dictionary of training instances 
             (example: for feature vector [0, 1, 0, 1] X would be {1 : 1, 3 : 1})
         """
-        X_train, Y_train, X_val, Y_val = [], [], [], []
+        X_train, Y_train, X_val, Y_val, self.val_idxs = [], [], [], [], []
         for index in tqdm(range(self.__len__())):
             sample = self.__getitem__(index)
             encoded_features = {self.features_encoder[t] : 1. for t in sample[0]}
@@ -233,7 +242,8 @@ class BaselineDataset(Dataset):
                 Y_train.append(encoded_label)
             else:
                 X_val.append(encoded_features)
-                Y_val.append(encoded_label)    
+                Y_val.append(encoded_label)
+                self.val_idxs.append(index)
         return Y_train, X_train, Y_val, X_val
 
     def decode_predictions(self, predicted_labels: List[int]) -> List[str]:

@@ -6,3 +6,6 @@ data/
 parsed_data/
 parsed_data_generalized/
 target/
+
+# saved data (models, predictions, metrics)
+saved_data/

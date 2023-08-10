@@ -1,6 +1,7 @@
 import argparse
 import logging
 import time
+import os
 import numpy as np
 
 from src.params import *
@@ -30,9 +31,9 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def baseline(args):
+def baseline(args, run_name):
     from liblinear.liblinearutil import (
-        problem, parameter, train, predict, evaluations
+        problem, parameter, train, predict, evaluations, save_model
     )
 
     # import data
@@ -60,9 +61,25 @@ def baseline(args):
         (accuracy, mse, sq_corr_coef) = evaluations(y_val, predicted_labels)
         logging.info(f"{accuracy=} {mse=} {sq_corr_coef=}")
         
-        # TODO save model
-        # TODO save predictions
-    
+        # save model
+        model_file_name = os.path.join(PATH_SAVE_MODEL, run_name)
+        if not os.path.exists(PATH_SAVE_MODEL): os.makedirs(PATH_SAVE_MODEL)
+        save_model(model_file_name, model)
+
+        # save predictions
+        predicted_folders = data.decode_predictions(predicted_labels)
+        predictions_file_name = os.path.join(PATH_SAVE_PREDICTIONS, run_name)
+        if not os.path.exists(PATH_SAVE_PREDICTIONS): os.makedirs(PATH_SAVE_PREDICTIONS)
+        with open(f"{predictions_file_name}.txt", 'w') as f:
+            for filename, folder in zip(data.filenames, predicted_folders):
+                f.write(f"{filename} --> {folder}\n")
+        
+        # save metrics
+        metrics_file_name = os.path.join(PATH_SAVE_METRICS, run_name)
+        if not os.path.exists(PATH_SAVE_METRICS): os.makedirs(PATH_SAVE_METRICS)
+        with open(f"{metrics_file_name}.txt", 'w') as f:
+            f.write(f"{accuracy=} {mse=} {sq_corr_coef=}")
+
     elif args.mode == "predict":
         logging.info(f"Baseline in {args.mode} mode.")
 
@@ -81,10 +98,19 @@ def baseline(args):
         _, x_infer = infer.get_input_data()
 
         predicted_labels, _, _ = predict([], x_infer, model)  # predicted_labels, accuracy, p_values
-        predicted_folders = data.decode_predictions(predicted_labels)
         
-        # TODO save model
-        # TODO save predictions
+        # save model
+        model_file_name = os.path.join(PATH_SAVE_MODEL, run_name)
+        if not os.path.exists(PATH_SAVE_MODEL): os.makedirs(PATH_SAVE_MODEL)
+        save_model(model_file_name, model)
+
+        # save predictions
+        predicted_folders = data.decode_predictions(predicted_labels)
+        predictions_file_name = os.path.join(PATH_SAVE_PREDICTIONS, run_name)
+        if not os.path.exists(PATH_SAVE_PREDICTIONS): os.makedirs(PATH_SAVE_PREDICTIONS)
+        with open(f"{predictions_file_name}.txt", 'w') as f:
+            for filename, folder in zip(infer.filenames, predicted_folders):
+                f.write(f"{filename} --> {folder}\n")
 
 if __name__ == "__main__":
     args = parse_args()
@@ -95,4 +121,4 @@ if __name__ == "__main__":
     logging.info(f"{run_name=}")
 
     if args.method == "baseline":
-        baseline(args)
+        baseline(args, run_name)
