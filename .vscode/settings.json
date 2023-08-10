@@ -6,5 +6,8 @@
     },
 
     // Select python interprether
-    "python.defaultInterpreterPath": "/home/huawei123/kwx1191442/venv/bin/python"
+    "python.defaultInterpreterPath": "/home/huawei123/kwx1191442/venv/bin/python",
+
+    // Font for VSCode on ubuntu
+    "editor.fontFamily": "'Ubuntu Mono', monospace",
 }
