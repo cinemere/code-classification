@@ -12,14 +12,7 @@ from tokenizers.tools import EncodingVisualizer
 
 from sklearn.preprocessing import LabelEncoder
 
-with open('config.json') as file:
-    cfg = json.load(file)
-
-# DATA_FOLDER = "data/rust/src/test/ui/"
-DATA_FOLDER = cfg['DATA_FOLDER']
-EXCLUDED_SUBDIRS = cfg['EXCLUDED_SUBDIRS']
-CODEPARROT_FOLDER = cfg['CODEPARROT_FOLDER']
-
+from src.params import *
 
 Item = namedtuple("Item", "fname relpath")
 """Structure to store location of each file
@@ -46,13 +39,13 @@ class UITestsDataset(Dataset):
     start_extra_id: int = 0
     max_len: int = 100
 
-    def __init__(self, tests_ui_folder: str = DATA_FOLDER, mode: str = 'train') -> None:
+    def __init__(self, tests_ui_folder: str = PATH_TEST_UI, mode: str = 'train') -> None:
         super(UITestsDataset).__init__()
         self.data_folder = tests_ui_folder
         self.mode = mode
         self.items = self.get_items(tests_ui_folder, mode)
 
-        self.tokenizer = AutoTokenizer.from_pretrained(CODEPARROT_FOLDER)
+        self.tokenizer = AutoTokenizer.from_pretrained(PATH_CODEPARROT)
         self.visualizer = EncodingVisualizer(self.tokenizer._tokenizer)
 
         self.tokenizer.pad_token = self.tokenizer.eos_token

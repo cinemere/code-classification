@@ -1,3 +1,4 @@
+# ----- These are default arguments of argparser in main.py ----- 
 # setup experiment (argparser default variables)
 EXPERIMENT_NAME = "TEST"
 
@@ -11,6 +12,7 @@ MODE_CHOICES = ["eval", "predict"]                          # in predict mode we
 
 LIBLINEAR_PARAMS = "-s 5"                                   # L1-regularization L2-loss SVC
 
+# ----- These arguments are not passed to argparser im main.py -----
 # paths
 PATH_REPO = "/home/huawei123/kwx1991442/code-classification"
 PATH_TEST_UI = "data/rust/tests/ui"
@@ -18,6 +20,7 @@ PATH_PARSED_CLASSIFUI = "parser/parsed_data"
 PATH_PARSED_CLASSIFUI_GENERALIZED = "parser/parsed_data_generalized"
 PATH_CODEPARROT = "data/codeparrot-small"
 
+# params of dataloader
 EXCLUDED_SUBDIRS = [
     "auxiliary",
     "bad",
@@ -28,4 +31,3 @@ EXCLUDED_SUBDIRS = [
     "span",
     "suggestions"
 ]
-
