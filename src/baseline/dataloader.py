@@ -5,6 +5,7 @@ from collections import namedtuple
 import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
+from tqdm import tqdm
 from typing import *
 
 from src.params import *
@@ -106,7 +107,7 @@ class UITestsDataset(Dataset):
 
     @property
     def classes(self):
-        return list(set([item.relpath.split(os.sep)[0] for item in self.items]))
+        return sorted(list(set([item.relpath.split(os.sep)[0] for item in self.items])))
 
     @property
     def vocab(self):
@@ -114,7 +115,7 @@ class UITestsDataset(Dataset):
         for index in range(self.__len__()):
             words = self.__getitem__(index)[0]
             vocab.update(words)
-        return list(vocab)
+        return sorted(list(vocab))
 
 
 def tokens2features(tokens, generalized_tokens):
@@ -143,10 +144,15 @@ class BaselineDataset(Dataset):
 
     def __init__(self, tokens_folder: str = PATH_PARSED_CLASSIFUI,
         generalized_tokens_folder: str = PATH_PARSED_CLASSIFUI_GENERALIZED, 
-        mode: str = 'train') -> None:
+        mode: str = 'train', make_encodings: bool = True) -> None:
         super(UITestsDataset).__init__()
         self.tokens = UITestsDataset(tokens_folder, mode)
         self.generalized_tokens = UITestsDataset(generalized_tokens_folder, mode)
+        self.features_encoder = None
+        self.classes_encoder = None
+        self.classes_decoder = None
+        if make_encodings:
+            self.make_encodings()
 
     def __getitem__(self, index) -> Tuple[List[str], str]:
         tokens, label = self.tokens[index]
@@ -159,9 +165,48 @@ class BaselineDataset(Dataset):
         return len(self.tokens)
 
     @property
+    def classes(self):
+        return self.tokens.classes
+
+    @property
     def vocab(self):
         vocab = set()
-        for index in range(self.__len__()):
+        for index in tqdm(range(self.__len__())):
             words = self.__getitem__(index)[0]
             vocab.update(words)
-        return list(vocab)
+        return sorted(list(vocab))
+
+    def make_encodings(self):
+        """Prepare label encoder for features and classes"""
+        vocab = self.vocab
+        self.features_encoder = dict([(y, idx + 1) for idx, y in enumerate(vocab)])
+        classes = self.classes
+        self.classes_encoder = dict([(y, idx + 1) for idx, y in enumerate(classes)])
+        self.classes_decoder = dict([(idx + 1, y) for idx, y in enumerate(classes)])
+
+    def get_input_data(self) -> Tuple[List[int], List[Dict[int, int]]]:
+        """Form data to the format needed for liblinear classifier
+
+        from liblinear docs:
+        y: a Python list/tuple/ndarray of l labels (type must be int/double).
+        x: 1. a list/tuple of l training instances. Feature vector of
+           each training instance is a list/tuple or dictionary.
+           2. an l * n numpy ndarray or scipy spmatrix (n: number of features).
+        
+        Output:
+            Y (List[int]) : categorical labels
+            X (List[Dict[int, int]]) : dictionary of training instances 
+            (example: for feature vector [0, 1, 0, 1] X would be {1 : 1, 3 : 1})
+        """
+        X, Y = [], []
+        for index in tqdm(range(self.__len__())):
+            sample = self.__getitem__(index)
+            encoded_features = {self.features_encoder[t] : 1. for t in sample[0]}
+            encoded_label = self.classes_encoder[sample[1]]
+            X.append(encoded_features)
+            Y.append(encoded_label)
+        return Y, X
+
+    def decode_predictions(self, predicted_labels: List[int]) -> List[str]:
+        """Decode predicted liblinear classifier labels to str format (names of folders)"""
+        return [self.classes_decoder[p_label] for p_label in predicted_labels]
