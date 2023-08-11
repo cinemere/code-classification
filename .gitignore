@@ -9,3 +9,6 @@ target/
 
 # saved data (models, predictions, metrics)
 saved_data/
+
+# minor files
+11-0.txt

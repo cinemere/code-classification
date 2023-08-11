@@ -5,7 +5,7 @@ import os
 import numpy as np
 
 from src.params import *
-from baseline.dataloader import BaselineDataset
+from src.baseline.dataloader import BaselineDataset
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
