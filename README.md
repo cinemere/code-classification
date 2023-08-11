@@ -12,7 +12,6 @@ python3 src/main.py --help
 ## repo structure
 ```
 .
-├── config.json
 ├── data
 │   ├── classifui
 │   ├── codeparrot-small
@@ -20,28 +19,33 @@ python3 src/main.py --help
 │   ├── monkey-rust
 │   ├── rust
 │   └── sandbox
-├── main.py
 ├── notebooks
-│   ├── baseline.ipynb
+│   ├── baseline_sandbox.ipynb
 │   ├── Prepare_data.ipynb
 │   └── test.ipynb
 ├── parser
 │   ├── Cargo.lock
 │   ├── Cargo.toml
 │   ├── model.json
-│   ├── parsed_data                                                    # parsed data with in `classifui` style
-│   ├── parsed_data_generalized                                        # parsed data with in `classifui` style (with generalization)
+│   ├── parsed_data                                                    # parsed data with in `classifui` style [gitignore]
+│   ├── parsed_data_generalized                                        # parsed data with in `classifui` style (with generalization) [gitignore]
 │   ├── src                                                            # parsing script
 │   └── target
 ├── README.md
 ├── requirements.txt
+├── saved_data                                                         # [gitignore]
+│   ├── metrics
+│   ├── models
+│   └── predictions
 └── src
-    ├── dataloader.py
+    ├── baseline
+    ├── codeparrot
+    ├── main.py
+    ├── params.py
     └── __pycache__
 
-15 directories, 11 files
+21 directories, 10 files
 ```
 
 ## minor links
 [python-tokenize-library](https://docs.python.org/3/library/tokenize.html#tokenize.generate_tokens)
-
