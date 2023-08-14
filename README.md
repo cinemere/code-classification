@@ -49,6 +49,7 @@ python3 src/main.py --help
 
 ## minor links
 [python-tokenize-library](https://docs.python.org/3/library/tokenize.html#tokenize.generate_tokens)
+[some-kind-of-siameze-metworks](https://github.com/IlyaGusev/tgcontest)
 
 ## results:
 
