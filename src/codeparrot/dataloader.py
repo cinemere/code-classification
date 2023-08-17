@@ -183,7 +183,10 @@ class UITestsLoader(Dataset):
     mode: str
     items: List[Item]
     
-    def __init__(self, tests_ui_folder: str = PATH_TEST_UI, mode: str = 'train') -> None:
+    def __init__(self, 
+        tests_ui_folder: str = PATH_TEST_UI, 
+        mode: str = 'train' 
+        ) -> None:
         super(UITestsLoader).__init__()
         self.data_folder = tests_ui_folder
         self.mode = mode
@@ -269,6 +272,7 @@ class UITestsLoader(Dataset):
     def classes(self):
         return list(set([item.relpath.split(os.sep)[0] for item in self.items]))
 
+
 class ClassificationCollator(object):
 
     tokenizer: GPT2Tokenizer #  AutoTokenizer
@@ -328,7 +332,7 @@ class ClassificationCollator(object):
         tokens = self.tokenizer(
             text=texts, 
             truncation=True,
-            padding=True,  # for batch 
+            padding='max_length', #True,  # for batch. True -- max length of sequence in batch, max_length -- use maxlength 
             max_length=self.max_sequence_length,  # 1024
             return_tensors='pt'
         )
@@ -351,7 +355,16 @@ class ClassificationCollator(object):
     #     return (tokens, label)
     
     def __call__(self, rawtexts_labels : List[Tuple[str, str]]) -> Tuple[torch.Tensor, torch.Tensor]:
-        print(len(rawtexts_labels), len(rawtexts_labels[0]), type(rawtexts_labels))
+        """Collate function for torch DataLoader
+
+        Returns:
+                    tokens (Dict[str, torch.Tensor])
+                        'input_ids'                     shape: [batch_size, maxlen] (maxlen=1024)
+                        'attention_mask'                shape: [batch_size, maxlen] (maxlen=1024)
+
+                    encodedlabels (torch.Tensor)        shape: [batch_size]
+        """
+        # print(len(rawtexts_labels), len(rawtexts_labels[0]), type(rawtexts_labels))
         rawtexts, labels = zip(*rawtexts_labels)
         tokens = self.encode_batch(rawtexts)
         encodedlabels = torch.from_numpy(self.encode_labels(labels))
