@@ -1,10 +1,24 @@
 # rust code classification
 
 ## setup
+
+### Clone repo & install python packages
 ```
 git clone https://github.com/cinemere/code-classification
 cd code-classification
 pip install -r requirements.txt
+```
+### Load data & pretrain
+```
+mkdir data
+git clone https://github.com/rust-lang/rust
+git lfs install
+git clone https://huggingface.co/codeparrot/codeparrot-small-multi
+cd ..
+```
+
+### Run experiments
+```
 export PYTHONPATH=$PWD
 python3 src/main.py --help
 ```
@@ -56,3 +70,8 @@ python3 src/main.py --help
 baseline accuracy : mean=69.39 std=0.71
 baseline mse : mean=4856.85 std=187.23
 baseline sq_corr_coef : mean=0.48 std=0.02
+
+codeparrot valudation accuaracy:
+0.735 maxlen=128 batch_size=4 epochs=4 lr=2e-5
+0.715 maxlen=512 batch_size=4 epochs=4 lr=2e-5
+0.761 maxlen=512 batch_size=4 epochs=5 lr=5e-5 (linear scheduler 8 epochs)

@@ -9,6 +9,7 @@ target/
 
 # saved data (models, predictions, metrics)
 saved_data/
+runs/
 
 # minor files
 11-0.txt

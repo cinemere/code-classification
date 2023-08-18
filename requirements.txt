@@ -4,4 +4,5 @@ torch
 tensorflow
 transformers
 scikit-learn
--U liblinear-official  # TODO: how to send -U to recursive pip install?
+liblinear-official
+gensim
