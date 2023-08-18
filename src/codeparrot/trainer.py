@@ -201,7 +201,7 @@ def run_codeparrot(args, exp_name):
     learning_rate = args.learning_rate
     codeparrot_params = f"{max_sequence_length=}_{batch_size=}_{learning_rate=}_{n_epochs=}"
     experiment_name = f"{exp_name}_{codeparrot_params}"
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = torch.device(args.device if torch.cuda.is_available() else 'cpu')
 
     model.to(device)
     optimizer = AdamW(model.parameters(),

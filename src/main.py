@@ -54,7 +54,9 @@ def parse_args():
         help="maximum length of sequence of tokens")
     codeparrot_params.add_argument("-lr", "--learning-rate", type=int, default=CP_LEARNING_RATE,
         help="number of epochs for learning codeparrot model (and for scheduler)")
-    
+    codeparrot_params.add_argument('--device', type=str, default=DEVICE,
+        help='device for codeparrit finetune')
+
     # saving params
     saving_params = parser.add_argument_group("Saving params")
     saving_params.add_argument('--save-model', action='store_true', 
@@ -68,6 +70,7 @@ def parse_args():
     saving_params.add_argument("-v", "--verbose", action="store_true",
         help="logging in debug mode")
 
+    
     args = parser.parse_args()
     if args.save_all:
         args.save_model, args.save_predictions, args.save_metrics = True, True, True

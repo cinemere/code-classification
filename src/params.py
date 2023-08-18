@@ -19,6 +19,7 @@ CP_BATCH_SIZE = 4
 CP_N_EPOCHS = 8
 CP_MAX_SEQUENCE_LENGTH = 512
 CP_LEARNING_RATE = 5e-5
+DEVICE = 'cuda'
 
 # ----- These arguments are not passed to argparser im main.py -----
 # paths
