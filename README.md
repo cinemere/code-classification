@@ -11,11 +11,18 @@ pip install -r requirements.txt
 ### Load data & pretrain
 ```
 mkdir data
+cd data
 git clone https://github.com/rust-lang/rust
 git lfs install
 git clone https://huggingface.co/codeparrot/codeparrot-small-multi
 cd ..
 ```
+### Check default params
+Go to src/params.py and fix the following path
+```
+PATH_REPO = "your/path/to/repo"
+```
+Also here you can view all params and change them.
 
 ### Run experiments
 ```
@@ -67,11 +74,16 @@ python3 src/main.py --help
 
 ## results:
 
-baseline accuracy : mean=69.39 std=0.71
-baseline mse : mean=4856.85 std=187.23
-baseline sq_corr_coef : mean=0.48 std=0.02
+**baseline** validation
+accuracy : mean=69.39 std=0.71\
+mse : mean=4856.85 std=187.23\
+sq_corr_coef : mean=0.48 std=0.02
 
-codeparrot valudation accuaracy:
-0.735 maxlen=128 batch_size=4 epochs=4 lr=2e-5
-0.715 maxlen=512 batch_size=4 epochs=4 lr=2e-5
+**codeparrot** valudation accuaracy (on full dataset):\
+0.681 maxlen=512 batch_size=4 epochs=5 lr=5e-5 (linear scheduler 8 epochs)
+
+codeparrot valudation accuaracy (on small dataset, colab loading bug):\
+0.735 maxlen=128 batch_size=4 epochs=4 lr=2e-5\
+0.715 maxlen=512 batch_size=4 epochs=4 lr=2e-5\
 0.761 maxlen=512 batch_size=4 epochs=5 lr=5e-5 (linear scheduler 8 epochs)
+
