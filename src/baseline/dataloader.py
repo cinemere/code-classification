@@ -100,9 +100,9 @@ class UITestsDataset(Dataset):
 
     def __getitem__(self, index: int) -> Tuple[List[str], str]:
         item = self.items[index]
-        text = self.item2text(item).split()
+        rawtext = self.item2text(item)
         label = item.relpath.split(os.sep)[0]
-        return (text, label)
+        return (rawtext, label)
 
     @property
     def classes(self):
@@ -112,7 +112,7 @@ class UITestsDataset(Dataset):
     def vocab(self):
         vocab = set()
         for index in range(self.__len__()):
-            words = self.__getitem__(index)[0]
+            words = self.__getitem__(index)[0].split()
             vocab.update(words)
         return sorted(list(vocab))
 
@@ -161,7 +161,7 @@ class BaselineDataset(Dataset):
         tokens, label = self.tokens[index]
         generalized_tokens, _ = self.generalized_tokens[index]
 
-        features = tokens2features(tokens, generalized_tokens)
+        features = tokens2features(tokens.split(), generalized_tokens.split())
         return (features, label)
 
     def __len__(self):

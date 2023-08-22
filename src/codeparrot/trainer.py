@@ -13,7 +13,8 @@ from transformers import (
     AdamW, get_linear_schedule_with_warmup)
 from sklearn.metrics import accuracy_score, classification_report
 
-from src.codeparrot.dataloader import UITestsLoader, ClassificationCollator
+from src.codeparrot.dataloader import ClassificationCollator
+from src.baseline.dataloader import UITestsDataset
 from src.params import (
     PATH_CODEPARROT,
     PATH_TEST_UI,
@@ -162,8 +163,8 @@ def run_codeparrot(args, exp_name):
     mode = 'train'
     tests_ui_folder=PATH_TEST_UI
     
-    dataset = UITestsLoader(tests_ui_folder, mode)
-    logger.info(f"UITestsLoader is initialize in mode {mode} from {tests_ui_folder}. {len(dataset)=}")
+    dataset = UITestsDataset(tests_ui_folder, mode)
+    logger.info(f"UITestsDataset is initialized in mode {mode} from {tests_ui_folder}. {len(dataset)=}")
 
     # Split generator
     seed = args.seed
