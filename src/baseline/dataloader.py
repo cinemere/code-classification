@@ -91,10 +91,12 @@ class UITestsDataset(Dataset):
         """Load and concatenate files for item
         
         {item.fname}.[rs,stderr,stdout]
+
+        text: filename + content of [rs,stderr,stdout]
         """
         search = os.path.join(self.data_folder, item.relpath, item.fname)
 
-        text = []
+        text = [item.fname.replace('_', ' ').replace('-', ' ')]
         for fname in [f for f in glob.glob(f"{search}*") \
             if os.path.splitext(f)[1] in self.extensions]:
 
