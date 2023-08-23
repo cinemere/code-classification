@@ -20,6 +20,7 @@ class ClassificationCollator(object):
     start_extra_id: int = 2
     stop_etra_id: int = 50
     max_sequence_length: int
+    labelencoder : LabelEncoder
 
     def __init__(self, classes : List[str], max_sequence_length : int = None) -> None:
         self.labelencoder = LabelEncoder().fit(classes)

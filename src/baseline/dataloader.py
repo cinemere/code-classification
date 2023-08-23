@@ -21,18 +21,22 @@ class UITestsDataset(Dataset):
     mode: str
     items: List[Item]
 
-    def __init__(self, tests_ui_folder: str = PATH_TEST_UI, mode: str = 'train') -> None:
+    def __init__(self, tests_ui_folder: str = PATH_TEST_UI, mode: str = 'train', debug: bool = False) -> None:
         super(UITestsDataset).__init__()
         self.data_folder = tests_ui_folder
         self.extensions = ['.rs', '.stderr', '.stdout']
         self.mode = mode
-        self.items = self.get_items(tests_ui_folder, mode)
+        self.items = self.get_items(tests_ui_folder, mode, debug)
 
-    def get_items(self, test_ui_folder: str, mode: str) -> List[Item]:
+    def get_items(self, test_ui_folder: str, mode: str, debug: bool = False) -> List[Item]:
         items = []
 
         if mode == 'train':
             for path, _, files in os.walk(test_ui_folder):
+
+                # In debug mode small dataset
+                if debug and len(items) > 100:
+                    break
 
                 # Check that file is placed in a subdirectory
                 if len(path) == len(test_ui_folder):
@@ -56,6 +60,10 @@ class UITestsDataset(Dataset):
 
         elif mode == 'infer':
             for path, _, files in os.walk(test_ui_folder):
+
+                # In debug mode small dataset
+                if debug and len(items) > 100:
+                    break
 
                 # Check that file is NOT placed in a subdirectory
                 if len(path) != len(test_ui_folder):

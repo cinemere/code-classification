@@ -7,6 +7,7 @@ import os
 from src.params import *
 from src.baseline.trainer import run_baseline
 from src.codeparrot.trainer import run_codeparrot
+from src.word2vec.trainer import run_word2vec
 
 def setup_logging(verbose, experiment_name):
     logs_folder = PATH_SAVE_LOGS
@@ -21,7 +22,7 @@ def setup_logging(verbose, experiment_name):
     )
 
 
-def parse_args():
+def parse_args(notebook=False, request=""):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
@@ -43,6 +44,23 @@ def parse_args():
     liblinear_params = parser.add_argument_group("Liblinear parameters")
     liblinear_params.add_argument("--liblinear-params", type=str, default=LIBLINEAR_PARAMS,
         help="params of LIBLINEAR classifier")
+
+    # word2vec params
+    word2vec_params = parser.add_argument_group("Word2vec parameters")
+    word2vec_params.add_argument("--tokens-source", type=str, default=TOKENS_SOURCE,
+        choices=TOKENS_SOURCE_CHOICES, help="the source of tokens for word2vec model")
+    word2vec_params.add_argument("--classifier", type=str, default=CLASSIFIER, 
+        choices=CLASSIFIER_CHOICES, help="select classification method")
+    word2vec_params.add_argument("--w2v-concat-method", type=str, default=W2C_CONCAT_METHOD,
+        choices=W2C_CONCAT_METHOD_CHOICES, help="select way to concat w2v vectors to encode documents")
+    word2vec_params.add_argument("--w2v-min-count", type=int, default=W2V_MIN_COUNT,
+        help="Ignores all words with total frequency lower than this.")
+    word2vec_params.add_argument("--w2v-vector-size", type=int, default=W2V_VECTOR_SIZE,
+        help="Dimensionality of the word vectors.")
+    word2vec_params.add_argument("--w2v-window", type=int, default=W2V_WINDOW,
+        help="Maximum distance between the current and predicted word within a sentence.")
+    word2vec_params.add_argument("--w2v-epochs", type=int, default=W2V_EPOCHS,
+        help="Number of epochs to train w2v vectors.")
     
     # codeparrot params
     codeparrot_params = parser.add_argument_group("Codeparrot parameters")
@@ -52,10 +70,10 @@ def parse_args():
         help="number of epochs for learning codeparrot model (and for scheduler)")
     codeparrot_params.add_argument("--max-seq-len", type=int, default=CP_MAX_SEQUENCE_LENGTH,
         help="maximum length of sequence of tokens")
-    codeparrot_params.add_argument("-lr", "--learning-rate", type=int, default=CP_LEARNING_RATE,
+    codeparrot_params.add_argument("-lr", "--learning-rate", type=float, default=CP_LEARNING_RATE,
         help="number of epochs for learning codeparrot model (and for scheduler)")
     codeparrot_params.add_argument('--device', type=str, default=DEVICE,
-        help='device for codeparrit finetune')
+        help='device for codeparrot finetune')
 
     # saving params
     saving_params = parser.add_argument_group("Saving params")
@@ -70,8 +88,8 @@ def parse_args():
     saving_params.add_argument("-v", "--verbose", action="store_true",
         help="logging in debug mode")
 
-    
-    args = parser.parse_args()
+    args = parser.parse_args(request) if notebook else parser.parse_args()
+
     if args.save_all:
         args.save_model, args.save_predictions, args.save_metrics = True, True, True
     return args
@@ -87,5 +105,9 @@ if __name__ == "__main__":
     if args.method == "baseline":
         np.random.seed(args.seed)
         run_baseline(args, run_name)
+
+    elif args.method == "word2vec":
+        run_word2vec(args, run_name)
+    
     elif args.method == "codeparrot":
         run_codeparrot(args, run_name)

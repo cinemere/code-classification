@@ -4,7 +4,7 @@ EXPERIMENT_NAME = "TEST"
 TRAIN_TEST_SPLIT = 0.7
 
 METHOD = "baseline"
-METHOD_CHOICES = ["baseline", "codeparrot"]
+METHOD_CHOICES = ["baseline", "codeparrot", "word2vec"]
 
 SEED = 42                                                   # used in traintestsplit in baseline/dataloader.py (modified and set in main)
 
@@ -13,6 +13,18 @@ MODE_CHOICES = ["eval", "predict"]                          # in predict mode we
 
 # liblinear params
 LIBLINEAR_PARAMS = "-s 5"                                   # L1-regularization L2-loss SVC
+
+# word2vec
+TOKENS_SOURCE = 'classifui'
+TOKENS_SOURCE_CHOICES = ['origin', 'classifui']
+CLASSIFIER = 'bayes'
+CLASSIFIER_CHOICES = ['logreg', 'forest', 'bayes', 'liblinear']
+W2C_CONCAT_METHOD = 'mean'
+W2C_CONCAT_METHOD_CHOICES = ['mean', 'n-means']
+W2V_MIN_COUNT = 5
+W2V_VECTOR_SIZE = 500
+W2V_WINDOW = 500
+W2V_EPOCHS = 50
 
 # codeparrot params
 CP_BATCH_SIZE = 4

@@ -3,8 +3,7 @@ from tqdm import tqdm
 from datetime import datetime
 import logging
 import torch
-from torch.utils.data import random_split
-from torch.utils.data import DataLoader
+from torch.utils.data import random_split, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from torch import Generator
 from transformers import (
