@@ -1,16 +1,18 @@
-"""Word2Vec embedding on baseline tokens"""
-
-from src.baseline.dataloader import UITestsDataset
-from gensim.models import Word2Vec
-from tqdm import tqdm
+"""Word2Vec embedding"""
+import logging
+import os
 import numpy as np
-import gensim
+from tqdm import tqdm
 from gensim.models import Word2Vec
-from transformers import GPT2Tokenizer
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from sklearn.preprocessing import LabelEncoder
+from transformers import GPT2Tokenizer
 from typing import *
 
 from src.params import *
+from src.baseline.dataloader import UITestsDataset
+
+logger = logging.getLogger(__name__)
 
 class TokenizerSplitter(object):
     tokenizer: GPT2Tokenizer
@@ -31,19 +33,53 @@ class LiblinearSplitter(object):
         return rawtext.split()
 
 class TrainW2VModel(object):
-    w2v_model : Word2Vec
-    splitter : Union[LiblinearSplitter, TokenizerSplitter]
+    """Train or load W2V model"""
+    model: Word2Vec
+    splitter: Union[LiblinearSplitter, TokenizerSplitter]
+    method: str = "Word2Vec"
 
     def __init__(self, 
-        train_set : UITestsDataset,
-        tokens_source : str,
-        min_count, vector_size, window, epochs
+        train_set: UITestsDataset,
+        tokens_source: str,
+        min_count: int = W2V_MIN_COUNT, 
+        vector_size: int = W2V_VECTOR_SIZE, 
+        window: int = W2V_WINDOW, 
+        epochs: int = W2V_EPOCHS,
+        load_model: bool = False,
+        load_model_path: str = W2V_MODEL_PATH
         ) -> None:
-        self.setup_splitter(tokens_source)
-        self.setup_w2vmodel(train_set, min_count, vector_size, window, epochs)
+        self.load_model = load_model
+        self.load_model_path = load_model_path
         
-    def get_model(self) -> Tuple[Union[LiblinearSplitter, TokenizerSplitter], Word2Vec]:
-        return self.splitter, self.w2v_model
+        self.tokens_source = tokens_source
+        self.min_count = None
+        self.vector_size = None
+        self.window = None
+        self.epochs = None
+        
+        logger.info(f"Setting up {self.method} model.")
+        self.setup_splitter(tokens_source)
+        self.setup_model(train_set, min_count, vector_size, window, epochs)
+        logger.info(f"{self.get_modelname()} model is set up.")
+
+    def parse_params_for_loading_model(self):
+        min_count = int(self.load_model_path.split('/')[-1].split('_min_count=')[1].split('_')[0])
+        vector_size = int(self.load_model_path.split('/')[-1].split('_vector_size=')[1].split('_')[0])
+        window = int(self.load_model_path.split('/')[-1].split('_window=')[1].split('_')[0])
+        epochs = int(self.load_model_path.split('/')[-1].split('_epochs=')[1].split('_')[0])
+
+    def get_modelname(self):
+        tokens_source = self.tokens_source
+        min_count = self.min_count        
+        vector_size = self.vector_size
+        window = self.window
+        epochs = self.epochs
+        
+        if self.load_model:
+            loaded_exp_name = self.load_model_path.split('/')[-1].split('_min_count=')[0]
+            return f"{loaded_exp_name=}_{min_count=}_{vector_size=}_{window=}_{epochs=}_{tokens_source=}"
+        else:
+            return f"{min_count=}_{vector_size=}_{window=}_{epochs=}_{tokens_source=}"
 
     def setup_splitter(self, tokens_source) -> None:
         if tokens_source == 'origin':
@@ -51,37 +87,91 @@ class TrainW2VModel(object):
         elif tokens_source == 'classifui':
             self.splitter = LiblinearSplitter()
 
-    def setup_w2vmodel(self, train_set, min_count, vector_size, window, epochs) -> None:
+    def setup_model(self, train_set, min_count, vector_size, window, epochs) -> None:
         """Train Word2Vec model
         
         sentences_train : List[List[str]]
         """
         sentences_train = [self.splitter(text) for text, _ in train_set]
-        self.w2v_model = gensim.models.Word2Vec(sentences_train, 
-            min_count = min_count,
-            vector_size = vector_size, 
-            window = window, 
-            epochs=epochs)        
+        if not self.load_model:
+            self.model = Word2Vec(sentences_train, 
+                min_count=min_count,
+                vector_size=vector_size, 
+                window=window, 
+                epochs=epochs)        
+        else:
+            self.model = Word2Vec.load(self.load_model_path)
+        
+        self.min_count = self.model.min_count
+        self.vector_size = self.model.vector_size
+        self.window = self.model.window
+        self.epochs = self.model.epochs
 
+    def get_model(self) -> Tuple[Union[LiblinearSplitter, TokenizerSplitter], Word2Vec]:
+        return self.splitter, self.model
+
+    def save_model(self, experiment_name):
+        if not self.load_model:
+            if not os.path.exists(PATH_SAVE_MODEL): os.makedirs(PATH_SAVE_MODEL)
+            model_path = os.path.join(PATH_SAVE_MODEL, f"{experiment_name}")
+            self.model.save(model_path)
+            logging.info(f"Saved {self.method} model to : {model_path}")
+        else:
+            logging.info(f"{self.method} model for {experiment_name} was loaded so it would not be saved.")
+
+
+class TrainD2VModel(TrainW2VModel):
+    model : Doc2Vec
+    splitter : Union[LiblinearSplitter, TokenizerSplitter]
+    method: str = "Doc2Vec"
+
+    def __init__(self, *args, **kwargs) -> None:
+        kwargs['load_model_path'] = D2V_MODEL_PATH
+        super().__init__(*args, **kwargs)
+
+    def setup_model(self, train_set, min_count, vector_size, window, epochs) -> None:
+        sentences_train = [self.splitter(text) for text, _ in train_set]
+        tag_documents = [TaggedDocument(sentences_train[i], [i]) for i in range(len(sentences_train))]
+
+        if not self.load_model:
+            self.model=Doc2Vec( 
+                min_count=min_count,
+                vector_size=vector_size, 
+                window=window,
+                epochs=epochs,
+                workers=6)        
+            self.model.build_vocab(tag_documents)
+            self.model.train(tag_documents, 
+                total_examples=self.model.corpus_count,
+                epochs=self.epochs)
+        else:
+            self.model = Doc2Vec.load(self.load_model_path)
+
+        self.min_count = self.model.min_count
+        self.vector_size = self.model.vector_size
+        self.window = self.model.window
+        self.epochs = self.model.epochs
+
+ 
 class W2VClassificationCollator(object):
-    w2v_model : Word2Vec
+    model : Word2Vec
     labelencoder : LabelEncoder
     splitter : Union[LiblinearSplitter, TokenizerSplitter]
     
     def __init__(self, 
-        w2v_model : Word2Vec,
+        model : Word2Vec,
         splitter : Union[LiblinearSplitter, TokenizerSplitter], 
         classes : List[str]
         ) -> None:
-        self.w2v_model = w2v_model
+        self.model = model
         self.splitter = splitter
         self.labelencoder = LabelEncoder().fit(classes)
 
     def encode_sentence(self, sentence):
         if len(sentence) == 0:
-            return np.zeros(self.w2v_model.wv.vector_size)        
+            return np.zeros(self.model.wv.vector_size)        
         else:
-            return self.w2v_model.wv.get_mean_vector(sentence)
+            return self.model.wv.get_mean_vector(sentence)
 
     def encode_labels(self, labels: List[str]) -> np.ndarray:
         return self.labelencoder.transform(labels)
@@ -91,116 +181,18 @@ class W2VClassificationCollator(object):
         vectors = [self.encode_sentence(self.splitter(text)) for text in rawtexts]
         encoded_labels = self.encode_labels(labels)
         return vectors, encoded_labels
-        
 
-class W2V_UITestsDataset(UITestsDataset):
-    def __init__(self, 
-        tests_ui_folder: str = PATH_PARSED_CLASSIFUI, mode: str = 'train', 
-        traintestsplit : float = 0.7,
-        make_encodings: bool = True
-        ) -> None:
-        super(W2V_UITestsDataset, self).__init__(tests_ui_folder, mode)
-        self.make_traintestspit(traintestsplit)
-        
-        self.w2v_model = None
-        self.train_enmbeddings()
 
-        self.classes_encoder = None
-        self.classes_decoder = None
-        if make_encodings:
-            self.make_classes_encodings()
+class D2VClassificationCollator(object):
+    model : Doc2Vec
+    labelencoder : LabelEncoder
+    splitter : Union[LiblinearSplitter, TokenizerSplitter]
 
-    def make_traintestspit(self, traintestsplit : float = 0.7):
-        self.train_idxs, self.val_idxs = [], []
-        for index in tqdm(range(self.__len__())):
-            if np.random.random() < traintestsplit:
-                self.train_idxs.append(index)
-            else:
-                self.val_idxs.append(index)
-
-    def make_classes_encodings(self):
-        classes = self.classes
-        self.classes_encoder = dict([(y, idx + 1) for idx, y in enumerate(classes)])
-        self.classes_decoder = dict([(idx + 1, y) for idx, y in enumerate(classes)])
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
     
-    def get_sentences(self, mode="full"):
-        if mode == "full":
-            return [self.__getitem__(index)[0] for index in tqdm(range(self.__len__()))]
-        elif mode == "train":
-            return [self.__getitem__(index)[0] for index in tqdm(self.train_idxs)]
-        elif mode == "val":
-            return [self.__getitem__(index)[0] for index in tqdm(self.val_idxs)]
-
-    def train_enmbeddings(self, 
-        min_count=5, vector_size=500, window=500, epochs=50
-        ) -> None:
-
-        sentences_train = self.get_sentences("train")
-        sentences_val = self.get_sentences("val")
-        
-        self.w2v_model = gensim.models.Word2Vec(sentences_train, min_count = min_count,
-                                    vector_size = vector_size, window = window, epochs=epochs)
-
-    def simple_encode_sentence(self, sentence):
+    def encode_sentence(self, sentence):
         if len(sentence) == 0:
-            return np.zeros(self.w2v_model.wv.vector_size)        
+            return np.zeros(self.model.vector_size)        
         else:
-            return self.w2v_model.wv.get_mean_vector(sentence)
-
-    def encode_sentence(self, sentence, maxlen=2000):
-        # if len(sentence) == 0:
-        #     return np.zeros(self.w2v_model.wv.vector_size)        
-        # else:
-        #     return self.w2v_model.wv.get_mean_vector(sentence)
-        list_of_vectors = []
-        vector_size = self.w2v_model.wv.vector_size
-        for i in range(0, maxlen, vector_size):
-            piece_of_sentence = sentence[i:i+vector_size]
-            if len(piece_of_sentence) == 0:
-                list_of_vectors.append(np.zeros(self.w2v_model.wv.vector_size))
-            else:
-                list_of_vectors.append(self.w2v_model.wv.get_mean_vector(sentence))
-        return np.concatenate(list_of_vectors, axis=0)
-
-    def get_input_train_val(self):
-        X_train, Y_train, X_val, Y_val = [], [], [], []
-
-        def get_YX(mode='train'):
-            if mode == 'train':
-                idxs = self.train_idxs
-            elif mode == 'val':
-                idxs = self.val_idxs
-
-            Y, X = [], []
-            for index in tqdm(idxs):
-                sample = self.__getitem__(index)
-                vectorized_text = self.simple_encode_sentence(sample[0])
-                encoded_label = self.classes_encoder[sample[1]]
-                X.append(vectorized_text)
-                Y.append(encoded_label)
-            return Y, X
-
-        Y_train, X_train = get_YX('train')
-        Y_val,   X_val   = get_YX('val')
-        return Y_train, X_train, Y_val, X_val
-
-    def get_input_train_val1(self):
-        X_train, Y_train, X_val, Y_val = [], [], [], []
-
-        def get_YX(mode='train'):
-            if mode == 'train':
-                idxs = self.train_idxs
-            elif mode == 'val':
-                idxs = self.val_idxs
-
-            Y, X = [], []
-            for index in tqdm(idxs):
-                sample = self.__getitem__(index)
-                vectorized_text = self.encode_sentence(self, sample[0])
-                encoded_label = self.classes_encoder[sample[1]]
-                X.append(vectorized_text)
-                Y.append(encoded_label)
-            return Y, X
-        Y_train, X_train = get_YX('train')
-        Y_val,   X_val   = get_YX('val')
-        return Y_train, X_train, Y_val, X_val
+            return self.model.infer_vector(sentence)

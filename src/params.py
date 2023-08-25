@@ -17,14 +17,16 @@ LIBLINEAR_PARAMS = "-s 5"                                   # L1-regularization 
 # word2vec
 TOKENS_SOURCE = 'classifui'
 TOKENS_SOURCE_CHOICES = ['origin', 'classifui']
-CLASSIFIER = 'bayes'
-CLASSIFIER_CHOICES = ['logreg', 'forest', 'bayes', 'liblinear']
+W2V_METHOD = "word2vec"
+W2V_METHOD_CHOICES = ["word2vec", "doc2vec"]
 W2C_CONCAT_METHOD = 'mean'
 W2C_CONCAT_METHOD_CHOICES = ['mean', 'n-means']
 W2V_MIN_COUNT = 5
 W2V_VECTOR_SIZE = 500
 W2V_WINDOW = 500
 W2V_EPOCHS = 50
+CLASSIFIER = 'bayes'
+CLASSIFIER_CHOICES = ['logreg', 'forest', 'bayes', 'liblinear', 'all']
 
 # codeparrot params
 CP_BATCH_SIZE = 4
@@ -60,3 +62,8 @@ EXCLUDED_SUBDIRS = [
     "span",
     "suggestions"
 ]
+
+# trained models
+W2V_MODEL_PATH = "/home/huawei123/kwx1991442/code-classification/saved_data/models/TEST_word2vec_42_24-Aug-20-53-19_min_count=5_vector_size=1500_window=1500_epochs=50_tokens_source='origin'"
+# W2V_MODEL_PATH = '/home/huawei123/kwx1991442/code-classification/saved_data/models/word2vec_min-count=5_vector-size=500_window=500_epochs=50.model'
+D2V_MODEL_PATH = ""

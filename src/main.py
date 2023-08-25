@@ -39,6 +39,8 @@ def parse_args(notebook=False, request=""):
         help="seed of the experiment")
     common_params.add_argument("--mode", type=str, choices=MODE_CHOICES, default=MODE,
         help="eval mode is used to measure accuracy, predict mode to get prediction")
+    common_params.add_argument("--load", action="store_true", 
+        help="use already trained loaded model")
 
     # liblinear params
     liblinear_params = parser.add_argument_group("Liblinear parameters")
@@ -49,6 +51,8 @@ def parse_args(notebook=False, request=""):
     word2vec_params = parser.add_argument_group("Word2vec parameters")
     word2vec_params.add_argument("--tokens-source", type=str, default=TOKENS_SOURCE,
         choices=TOKENS_SOURCE_CHOICES, help="the source of tokens for word2vec model")
+    word2vec_params.add_argument("--w2v-method", type=str, default=W2V_METHOD,
+        choices=W2V_METHOD_CHOICES, help="specify the model for training embeddings")
     word2vec_params.add_argument("--classifier", type=str, default=CLASSIFIER, 
         choices=CLASSIFIER_CHOICES, help="select classification method")
     word2vec_params.add_argument("--w2v-concat-method", type=str, default=W2C_CONCAT_METHOD,
