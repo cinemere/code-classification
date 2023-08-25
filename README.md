@@ -29,6 +29,10 @@ Also here you can view all params and change them.
 export PYTHONPATH=$PWD
 python3 src/main.py --help
 ```
+for GPU machine (to ignore some warnings):
+```
+export TF_CPP_MIN_LOG_LEVEL=2
+```
 
 ## repo structure
 ```
