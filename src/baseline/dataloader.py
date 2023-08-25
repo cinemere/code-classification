@@ -35,7 +35,7 @@ class UITestsDataset(Dataset):
             for path, _, files in os.walk(test_ui_folder):
 
                 # In debug mode small dataset
-                if debug and len(items) > 100:
+                if debug and len(items) > 1000:
                     break
 
                 # Check that file is placed in a subdirectory
@@ -62,7 +62,7 @@ class UITestsDataset(Dataset):
             for path, _, files in os.walk(test_ui_folder):
 
                 # In debug mode small dataset
-                if debug and len(items) > 100:
+                if debug and len(items) > 1000:
                     break
 
                 # Check that file is NOT placed in a subdirectory
