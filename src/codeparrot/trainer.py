@@ -13,7 +13,7 @@ from transformers import (
 from sklearn.metrics import accuracy_score, classification_report
 
 from src.codeparrot.dataloader import ClassificationCollator
-from src.baseline.dataloader import UITestsDataset
+from src.baseline.dataloader import UITestsDataset, RemovedBadClasses
 from src.params import (
     PATH_CODEPARROT,
     PATH_TEST_UI,
@@ -161,8 +161,10 @@ def run_codeparrot(args, exp_name):
     # Load data
     mode = 'train'
     tests_ui_folder=PATH_TEST_UI
+    min_number_of_files_in_class=args.min_number_of_files_in_class
     
-    dataset = UITestsDataset(tests_ui_folder, mode)
+    # dataset = UITestsDataset(tests_ui_folder, mode)
+    dataset = RemovedBadClasses(tests_ui_folder, mode, min_number_of_files_in_class=min_number_of_files_in_class)
     logger.info(f"UITestsDataset is initialized in mode {mode} from {tests_ui_folder}. {len(dataset)=}")
 
     # Split generator

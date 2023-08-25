@@ -12,7 +12,7 @@ def run_baseline(args, run_name):
     )
 
     # import data
-    data = BaselineDataset()
+    data = BaselineDataset(min_number_of_files_in_class=args.min_number_of_files_in_class)
     logger.info(f"{len(data.vocab)=}")
     logger.info(f"Dataset is setup!")
 

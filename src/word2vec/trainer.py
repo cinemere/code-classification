@@ -17,7 +17,7 @@ from liblinear.liblinearutil import (
     problem, parameter, train, predict, evaluations, save_model
 )
 from src.utils import CustomSummaryWriter
-from src.baseline.dataloader import UITestsDataset
+from src.baseline.dataloader import UITestsDataset, RemovedBadClasses
 from src.word2vec.dataloader import (W2VClassificationCollator, TrainW2VModel,
     D2VClassificationCollator, TrainD2VModel)
 from src.params import (PATH_TEST_UI, PATH_PARSED_CLASSIFUI,
@@ -192,13 +192,15 @@ def run_word2vec(args, exp_name):
     # load data
     mode = 'train'
     tokens_source = args.tokens_source
+    min_number_of_files_in_class=args.min_number_of_files_in_class
     
     if tokens_source == 'origin':
         tests_ui_folder=PATH_TEST_UI
     elif tokens_source == 'classifui':
         tests_ui_folder=PATH_PARSED_CLASSIFUI
 
-    dataset = UITestsDataset(tests_ui_folder, mode)
+    # dataset = UITestsDataset(tests_ui_folder, mode)
+    dataset = RemovedBadClasses(tests_ui_folder, mode, min_number_of_files_in_class=min_number_of_files_in_class)
     logger.info(f"UITestsDataset is initialized in mode {mode} from {tests_ui_folder} "
                 f" with {tokens_source=}. {len(dataset)=}")
 

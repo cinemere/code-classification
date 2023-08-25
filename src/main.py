@@ -42,6 +42,11 @@ def parse_args(notebook=False, request=""):
     common_params.add_argument("--load", action="store_true", 
         help="use already trained loaded model")
 
+    # dataset params
+    dataset_params = parser.add_argument_group("Dataset parameters")
+    dataset_params.add_argument("-min", "--min-number-of-files-in-class", type=int,
+        default=MIN_NUMBER_OF_FILES_IN_CLASS, help="remove data with low poplutaion classes")
+
     # liblinear params
     liblinear_params = parser.add_argument_group("Liblinear parameters")
     liblinear_params.add_argument("--liblinear-params", type=str, default=LIBLINEAR_PARAMS,

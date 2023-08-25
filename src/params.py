@@ -11,6 +11,9 @@ SEED = 42                                                   # used in traintests
 MODE = "eval"                                               # in eval mode we perform train-test-split to measure accuracy
 MODE_CHOICES = ["eval", "predict"]                          # in predict mode we use full dataset to train classifier
 
+# dataset params
+MIN_NUMBER_OF_FILES_IN_CLASS = 8
+
 # liblinear params
 LIBLINEAR_PARAMS = "-s 5"                                   # L1-regularization L2-loss SVC
 

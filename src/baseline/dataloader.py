@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import glob
 from collections import namedtuple
@@ -8,6 +9,8 @@ from tqdm import tqdm
 from typing import *
 
 from src.params import *
+
+logger = logging.getLogger(__name__)
 
 Item = namedtuple("Item", "fname relpath")
 """Structure to store location of each file
@@ -130,6 +133,42 @@ class UITestsDataset(Dataset):
     def filenames(self):
         return [item.fname for item in self.items]
 
+
+class RemovedBadClasses(UITestsDataset):
+    def __init__(self, tests_ui_folder: str = PATH_TEST_UI, mode: str = 'train', debug: bool = False,
+        min_number_of_files_in_class: int = MIN_NUMBER_OF_FILES_IN_CLASS
+        ) -> None:
+        self.min_number_of_files_in_class = min_number_of_files_in_class
+        super().__init__(tests_ui_folder, mode, debug)
+
+    def get_items(self, test_ui_folder: str, mode: str, debug: bool = False) -> List[Item]:
+        items = super().get_items(test_ui_folder, mode, debug)
+
+        if mode == 'train' and self.min_number_of_files_in_class > 0:
+            # Estimate number of files in each class        
+            sizes = {}
+            for item in items:
+                folder = item.relpath.split(os.sep)[0]
+                if folder in sizes:
+                    sizes[folder] += 1
+                else:
+                    sizes[folder] = 1
+
+            # Remove items with small number of files in thier class
+            items_with_small_classes, items_with_fine_classes = [], []
+            for item in items:
+                folder = item.relpath.split(os.sep)[0]
+                if sizes[folder] > self.min_number_of_files_in_class:
+                    items_with_fine_classes.append(item)
+                else:
+                    items_with_small_classes.append(item)
+            
+            logger.info(f"Removing data with low population classes. "
+                        f"{len(items_with_small_classes)} are removed. "
+                        f"{len(items_with_fine_classes)} are left. ")
+        return items_with_fine_classes
+
+
 def tokens2features(tokens, generalized_tokens):
     """Prepare bag of features for each file
     Tokens, "generalized" tokens, and their bigrams and trigrams are used as features.
@@ -156,10 +195,17 @@ class BaselineDataset(Dataset):
 
     def __init__(self, tokens_folder: str = PATH_PARSED_CLASSIFUI,
         generalized_tokens_folder: str = PATH_PARSED_CLASSIFUI_GENERALIZED, 
-        mode: str = 'train', make_encodings: bool = True) -> None:
-        super(UITestsDataset).__init__()
-        self.tokens = UITestsDataset(tokens_folder, mode)
-        self.generalized_tokens = UITestsDataset(generalized_tokens_folder, mode)
+        mode: str = 'train', make_encodings: bool = True,
+        min_number_of_files_in_class: int = MIN_NUMBER_OF_FILES_IN_CLASS
+        ) -> None:
+        super().__init__()
+        # self.tokens = UITestsDataset(tokens_folder, mode)
+        # self.generalized_tokens = UITestsDataset(generalized_tokens_folder, mode)
+        self.tokens = RemovedBadClasses(tokens_folder, mode, \
+            min_number_of_files_in_class=min_number_of_files_in_class)
+        self.generalized_tokens = RemovedBadClasses(generalized_tokens_folder, mode, \
+            min_number_of_files_in_class=min_number_of_files_in_class)
+            
         self.features_encoder = None
         self.classes_encoder = None
         self.classes_decoder = None
