@@ -46,6 +46,8 @@ def parse_args(notebook=False, request=""):
     dataset_params = parser.add_argument_group("Dataset parameters")
     dataset_params.add_argument("-min", "--min-number-of-files-in-class", type=int,
         default=MIN_NUMBER_OF_FILES_IN_CLASS, help="remove data with low poplutaion classes")
+    dataset_params.add_argument("--debug", action="store_true",
+        help="enable debug mode (shortened version of dataset)")
 
     # liblinear params
     liblinear_params = parser.add_argument_group("Liblinear parameters")

@@ -183,13 +183,19 @@ class W2VClassificationCollator(object):
         return vectors, encoded_labels
 
 
-class D2VClassificationCollator(object):
+class D2VClassificationCollator(W2VClassificationCollator):
     model : Doc2Vec
     labelencoder : LabelEncoder
     splitter : Union[LiblinearSplitter, TokenizerSplitter]
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, 
+        model : Doc2Vec,
+        splitter : Union[LiblinearSplitter, TokenizerSplitter], 
+        classes : List[str]
+        ) -> None:
+        self.model = model
+        self.splitter = splitter
+        self.labelencoder = LabelEncoder().fit(classes)
     
     def encode_sentence(self, sentence):
         if len(sentence) == 0:

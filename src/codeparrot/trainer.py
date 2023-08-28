@@ -62,15 +62,17 @@ class Trainer(object):
     def setup_tensorboard(self, experiment_name, hparams):        
         writer = SummaryWriter(f"runs/{experiment_name}")
         layout = {
-            "metrics": {
+            "episode": {
                 "loss": ["Multiline", ["loss/train", "loss/validation"]],
                 "accuracy": ["Multiline", ["accuracy/train", "accuracy/validation"]],
+            },
+            "epoch": {
                 "epoch_loss": ["Multiline", ["epoch_loss/train", "epoch_loss/validation"]],
                 "epoch_accuracy": ["Multiline", ["epoch_accuracy/train", "epoch_accuracy/validation"]],
             },
         }
+        writer.add_hparams(hparams, {})
         writer.add_custom_scalars(layout)
-        writer.add_hparams(hparams, {'metric' : 0})
         return writer
 
     def train_one_epoch(self, n_epoch):
@@ -162,14 +164,17 @@ def run_codeparrot(args, exp_name):
     mode = 'train'
     tests_ui_folder=PATH_TEST_UI
     min_number_of_files_in_class=args.min_number_of_files_in_class
+    debug = args.debug
     
     # dataset = UITestsDataset(tests_ui_folder, mode)
-    dataset = RemovedBadClasses(tests_ui_folder, mode, min_number_of_files_in_class=min_number_of_files_in_class)
+    dataset = RemovedBadClasses(tests_ui_folder, mode, 
+        debug=debug,
+        min_number_of_files_in_class=min_number_of_files_in_class)
     logger.info(f"UITestsDataset is initialized in mode {mode} from {tests_ui_folder}. {len(dataset)=}")
 
     # Split generator
     seed = args.seed
-    lengths = [args.traintestsplit, 1-args.traintestsplit]
+    lengths = [args.traintestsplit, 1.-args.traintestsplit]
 
     splitgenerator = Generator().manual_seed(args.seed)
     train_set, val_set = random_split(dataset, 
@@ -208,7 +213,7 @@ def run_codeparrot(args, exp_name):
     model.to(device)
     optimizer = AdamW(model.parameters(),
                   lr = learning_rate, # default is 5e-5, our notebook had 2e-5
-                  eps = 1e-8 # default is 1e-8.
+                  eps = 1e-8 # default is 1e-8. (tried 1e-6)
                   )
     trainer = Trainer(model, optimizer, device, loader_train, loader_val, experiment_name=experiment_name, n_epochs=n_epochs, hparams=vars(args))
 

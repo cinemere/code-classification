@@ -111,10 +111,12 @@ class Trainer(object):
         self.writer.close()
 
     def fit(self, X_train, Y_train):
+        logger.info(f"Fitting {self.classifier_name} classifier ({self.experiment_name})")
         self.clf.fit(X_train, Y_train)
         if self.logtb: self.setup_tensorboard()
 
     def eval(self, X_val, Y_val):
+        logger.info(f"Evaluating {self.classifier_name} classifier ({self.experiment_name})")
         Y_pred = self.clf.best_estimator_.predict(X_val)
         metrics = evaluate(Y_pred, Y_val, self.labelencoder)
         
@@ -126,6 +128,8 @@ class Trainer(object):
     def save_metrics(self, metrics):
         if not self._save_metrics:
             return
+        logger.info(f"Saving metrics for {self.classifier_name} classifier ({self.experiment_name})")
+
         m_vals, m_arrs, m_count = metrics
 
         metrics_folder = os.path.join(PATH_SAVE_METRICS, self.experiment_name)
@@ -157,6 +161,7 @@ class Trainer(object):
     def save_predictions(self, predictions, ground_true):
         if not self._save_predictions:
             return
+        logger.info(f"Saving predictions for {self.classifier_name} classifier ({self.experiment_name})")
 
         predictions_folder = os.path.join(PATH_SAVE_PREDICTIONS, self.experiment_name)
         if not os.path.exists(predictions_folder): os.makedirs(predictions_folder)
@@ -174,6 +179,7 @@ class Trainer(object):
     def save_model(self):
         if not self._save_model:
             return
+        logger.info(f"Saving model for {self.classifier_name} classifier ({self.experiment_name})")
 
         model_folder = os.path.join(PATH_SAVE_MODEL, self.experiment_name)
         if not os.path.exists(model_folder): os.makedirs(model_folder)
@@ -193,6 +199,7 @@ def run_word2vec(args, exp_name):
     mode = 'train'
     tokens_source = args.tokens_source
     min_number_of_files_in_class=args.min_number_of_files_in_class
+    debug = args.debug
     
     if tokens_source == 'origin':
         tests_ui_folder=PATH_TEST_UI
@@ -200,7 +207,9 @@ def run_word2vec(args, exp_name):
         tests_ui_folder=PATH_PARSED_CLASSIFUI
 
     # dataset = UITestsDataset(tests_ui_folder, mode)
-    dataset = RemovedBadClasses(tests_ui_folder, mode, min_number_of_files_in_class=min_number_of_files_in_class)
+    dataset = RemovedBadClasses(tests_ui_folder, mode, 
+        debug=debug,
+        min_number_of_files_in_class=min_number_of_files_in_class)
     logger.info(f"UITestsDataset is initialized in mode {mode} from {tests_ui_folder} "
                 f" with {tokens_source=}. {len(dataset)=}")
 
@@ -232,7 +241,10 @@ def run_word2vec(args, exp_name):
     
     # preprocess data
     concat_method = args.w2v_concat_method #  TODO (NotImplemented)
-    collate_fn = W2VClassificationCollator(w2v_model, splitter, dataset.classes)
+    if args.w2v_method == "word2vec":
+        collate_fn = W2VClassificationCollator(w2v_model, splitter, dataset.classes)
+    else:
+        collate_fn = D2VClassificationCollator(w2v_model, splitter, dataset.classes)
     X_train, Y_train = collate_fn(train_set)
     X_val,   Y_val   = collate_fn(val_set)
     logger.info(f"{len(dataset.classes)=}, {len(X_train)=}, {len(X_val)=}")
