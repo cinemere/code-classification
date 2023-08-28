@@ -178,7 +178,7 @@ class Trainer(object):
         model_folder = os.path.join(PATH_SAVE_MODEL, self.experiment_name)
         if not os.path.exists(model_folder): os.makedirs(model_folder)
         hparams = '_'.join([f"{key}-{str(value)}" for key, value in self.clf.best_params_.items()])
-        model_filename = os.path.join(model_folder, f"{self.classifier_name}_{hparams}.txt")
+        model_filename = os.path.join(model_folder, f"{self.classifier_name}_{hparams}")
 
         with open(model_filename, "wb") as f:
             pickle.dump(self.clf.best_estimator_, f)        

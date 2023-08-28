@@ -143,7 +143,7 @@ class TrainD2VModel(TrainW2VModel):
             self.model.build_vocab(tag_documents)
             self.model.train(tag_documents, 
                 total_examples=self.model.corpus_count,
-                epochs=self.epochs)
+                epochs=epochs)
         else:
             self.model = Doc2Vec.load(self.load_model_path)
 

@@ -58,6 +58,33 @@ def run_baseline(args, run_name):
             with open(f"{metrics_file_name}.txt", 'w') as f:
                 f.write(f"{accuracy=} {mse=} {sq_corr_coef=}")
 
+                # save metrics 2.0
+                from src.word2vec.trainer import evaluate
+                from sklearn.preprocessing import LabelEncoder
+                le = LabelEncoder().fit(data.classes)
+                metrics2 = evaluate(y_val, predicted_labels, le)
+                m_vals, m_arrs, m_count = metrics2
+
+                f.write(f"\nAVERAGE METRICS:\n")
+                for key, value in m_vals.items():
+                    f.write(f"{key:30}={value:10.8}\n")
+
+                f.write(f"\nBY-CLASS METRICS:\n")
+                for key, values in m_arrs.items():
+                    f.write(f"{key}:\n")
+                    for i, value in enumerate(values):
+                        classname = f"({le.inverse_transform([i])[0]})"
+                        f.write(f"{i}\t{classname:30}\t{value:10.4}\n")
+                
+                f.write(f"\nCOUNTS:\n")
+                for i, (count_x, count_y) in enumerate(zip(m_count['counts_y_pred_x'], m_count['counts_y_pred'])):
+                    classname = f"({le.inverse_transform([count_x])[0]})"
+                    if count_x in m_count['counts_y_val_x']:
+                        count_v = m_count['counts_y_val'][m_count['counts_y_val_x'] == count_x][0]
+                    else:
+                        count_v = 0
+                    f.write(f"{count_x:3}\t{classname:30}\t{count_y:3} (out of {count_v:6})\n")
+
     elif args.mode == "predict":
         logger.info(f"Baseline in {args.mode} mode.")
 
