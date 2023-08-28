@@ -91,3 +91,7 @@ codeparrot valudation accuaracy (on small dataset, colab loading bug):\
 0.715 maxlen=512 batch_size=4 epochs=4 lr=2e-5\
 0.761 maxlen=512 batch_size=4 epochs=5 lr=5e-5 (linear scheduler 8 epochs)
 
+## download links for parsed data:
+
+[parsed_data.tar.gz](https://drive.google.com/file/d/1xHhvJVQ5vp2yupbHUqtEb9kBKP5XDZwM/view?usp=sharing)
+[parsed_data_generalized.tar.gz](https://drive.google.com/file/d/1GPSAKWCgKDRgDXaNw-rq8zuTSu4UjPGS/view?usp=sharing)
