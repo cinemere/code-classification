@@ -77,9 +77,9 @@ class TrainW2VModel(object):
         
         if self.load_model:
             loaded_exp_name = self.load_model_path.split('/')[-1].split('_min_count=')[0]
-            return f"{loaded_exp_name=}_{min_count=}_{vector_size=}_{window=}_{epochs=}_{tokens_source=}"
+            return f"loaded={loaded_exp_name}_{min_count=}_{vector_size=}_{window=}_{epochs=}_tokens_source={tokens_source}"
         else:
-            return f"{min_count=}_{vector_size=}_{window=}_{epochs=}_{tokens_source=}"
+            return f"{min_count=}_{vector_size=}_{window=}_{epochs=}_tokens_source={tokens_source}"
 
     def setup_splitter(self, tokens_source) -> None:
         if tokens_source == 'origin':
@@ -94,12 +94,14 @@ class TrainW2VModel(object):
         """
         sentences_train = [self.splitter(text) for text, _ in train_set]
         if not self.load_model:
+            logger.info(f"Fitting {self.method} model")
             self.model = Word2Vec(sentences_train, 
                 min_count=min_count,
                 vector_size=vector_size, 
                 window=window, 
                 epochs=epochs)        
         else:
+            logger.info(f"Loading {self.method} model")
             self.model = Word2Vec.load(self.load_model_path)
         
         self.min_count = self.model.min_count
@@ -112,13 +114,15 @@ class TrainW2VModel(object):
 
     def save_model(self, experiment_name):
         if not self.load_model:
-            if not os.path.exists(PATH_SAVE_MODEL): os.makedirs(PATH_SAVE_MODEL)
-            model_path = os.path.join(PATH_SAVE_MODEL, f"{experiment_name}")
-            self.model.save(model_path)
-            logging.info(f"Saved {self.method} model to : {model_path}")
-        else:
             logging.info(f"{self.method} model for {experiment_name} was loaded so it would not be saved.")
+            return
 
+        logger.info(f"Saving {self.method} model")
+        model_folder = os.path.join(PATH_SAVE_MODEL, experiment_name)
+        if not os.path.exists(model_folder): os.makedirs(model_folder)
+        model_path = os.path.join(model_folder, f"model={self.method}")
+        self.model.save(model_path)
+        logging.info(f"Saved {self.method} model to : {model_path}")
 
 class TrainD2VModel(TrainW2VModel):
     model : Doc2Vec
@@ -134,6 +138,7 @@ class TrainD2VModel(TrainW2VModel):
         tag_documents = [TaggedDocument(sentences_train[i], [i]) for i in range(len(sentences_train))]
 
         if not self.load_model:
+            logger.info(f"Fitting {self.method} model")
             self.model=Doc2Vec( 
                 min_count=min_count,
                 vector_size=vector_size, 
@@ -145,6 +150,7 @@ class TrainD2VModel(TrainW2VModel):
                 total_examples=self.model.corpus_count,
                 epochs=epochs)
         else:
+            logger.info(f"Loading {self.method} model")
             self.model = Doc2Vec.load(self.load_model_path)
 
         self.min_count = self.model.min_count

@@ -265,7 +265,5 @@ def run_word2vec(args, exp_name):
                 save_metrics=args.save_metrics,
                 save_predictions=args.save_predictions
             )
-            logger.info(f"Fitting {name} classifier")
             training.fit(X_train, Y_train)
-            logger.info(f"Evaluation of {name} classifier")
             training.eval(X_val, Y_val)
