@@ -63,10 +63,10 @@ class TrainW2VModel(object):
         logger.info(f"{self.get_modelname()} model is set up.")
 
     def parse_params_for_loading_model(self):
-        min_count = int(self.load_model_path.split('/')[-1].split('_min_count=')[1].split('_')[0])
-        vector_size = int(self.load_model_path.split('/')[-1].split('_vector_size=')[1].split('_')[0])
-        window = int(self.load_model_path.split('/')[-1].split('_window=')[1].split('_')[0])
-        epochs = int(self.load_model_path.split('/')[-1].split('_epochs=')[1].split('_')[0])
+        min_count = int(self.load_model_path.split('/')[-2].split('_min_count=')[1].split('_')[0])
+        vector_size = int(self.load_model_path.split('/')[-2].split('_vector_size=')[1].split('_')[0])
+        window = int(self.load_model_path.split('/')[-2].split('_window=')[1].split('_')[0])
+        epochs = int(self.load_model_path.split('/')[-2].split('_epochs=')[1].split('_')[0])
 
     def get_modelname(self):
         tokens_source = self.tokens_source
@@ -76,7 +76,7 @@ class TrainW2VModel(object):
         epochs = self.epochs
         
         if self.load_model:
-            loaded_exp_name = self.load_model_path.split('/')[-1].split('_min_count=')[0]
+            loaded_exp_name = self.load_model_path.split('/')[-2].split('_min_count=')[0]
             return f"loaded={loaded_exp_name}_{min_count=}_{vector_size=}_{window=}_{epochs=}_tokens_source={tokens_source}"
         else:
             return f"{min_count=}_{vector_size=}_{window=}_{epochs=}_tokens_source={tokens_source}"
@@ -113,7 +113,7 @@ class TrainW2VModel(object):
         return self.splitter, self.model
 
     def save_model(self, experiment_name):
-        if not self.load_model:
+        if self.load_model:
             logging.info(f"{self.method} model for {experiment_name} was loaded so it would not be saved.")
             return
 
@@ -130,7 +130,6 @@ class TrainD2VModel(TrainW2VModel):
     method: str = "Doc2Vec"
 
     def __init__(self, *args, **kwargs) -> None:
-        kwargs['load_model_path'] = D2V_MODEL_PATH
         super().__init__(*args, **kwargs)
 
     def setup_model(self, train_set, min_count, vector_size, window, epochs) -> None:
