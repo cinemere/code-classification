@@ -166,7 +166,9 @@ class RemovedBadClasses(UITestsDataset):
             logger.info(f"Removing data with low population classes. "
                         f"{len(items_with_small_classes)} are removed. "
                         f"{len(items_with_fine_classes)} are left. ")
-        return items_with_fine_classes
+            return items_with_fine_classes
+        else:
+            return items
 
 
 def tokens2features(tokens, generalized_tokens):

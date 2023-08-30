@@ -60,8 +60,6 @@ def run_baseline(args, run_name):
 
                 # save metrics 2.0
                 from src.word2vec.trainer import evaluate
-                from sklearn.preprocessing import LabelEncoder
-                le = LabelEncoder().fit(data.classes)
                 metrics2 = evaluate(y_val, predicted_labels, le)
                 m_vals, m_arrs, m_count = metrics2
 
@@ -73,12 +71,14 @@ def run_baseline(args, run_name):
                 for key, values in m_arrs.items():
                     f.write(f"{key}:\n")
                     for i, value in enumerate(values):
-                        classname = f"({le.inverse_transform([i])[0]})"
+                        classname = f"({data.decode_predictions([i + 1])[0]})"
+                        # classname = f"({le.inverse_transform([i])[0]})"
                         f.write(f"{i}\t{classname:30}\t{value:10.4}\n")
                 
                 f.write(f"\nCOUNTS:\n")
                 for i, (count_x, count_y) in enumerate(zip(m_count['counts_y_pred_x'], m_count['counts_y_pred'])):
-                    classname = f"({le.inverse_transform([count_x])[0]})"
+                    classname = f"({data.decode_predictions([count_x])[0]})"
+                    # classname = f"({le.inverse_transform([count_x])[0]})"
                     if count_x in m_count['counts_y_val_x']:
                         count_v = m_count['counts_y_val'][m_count['counts_y_val_x'] == count_x][0]
                     else:
