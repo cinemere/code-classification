@@ -37,6 +37,7 @@ CP_N_EPOCHS = 8
 CP_MAX_SEQUENCE_LENGTH = 512
 CP_LEARNING_RATE = 5e-5
 DEVICE = 'cuda'
+SPLITTING = False
 
 # ----- These arguments are not passed to argparser im main.py -----
 # paths
@@ -48,6 +49,7 @@ PATH_PARSED_CLASSIFUI             = "parser/parsed_data"
 PATH_PARSED_CLASSIFUI_GENERALIZED = "parser/parsed_data_generalized"
 
 PATH_CODEPARROT = "data/codeparrot-small"
+PATH_CODEGEN    = "data/codegen-350M-mono-rust/"
 
 PATH_SAVE_MODEL       = "saved_data/models"
 PATH_SAVE_PREDICTIONS = "saved_data/predictions"

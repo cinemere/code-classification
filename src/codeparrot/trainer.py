@@ -184,8 +184,10 @@ def run_codeparrot(args, exp_name):
     # Train and validation dataloaders
     max_sequence_length = args.max_seq_len
     batch_size = args.batch_size
+    path_to_tokenizer = PATH_CODEPARROT
+    splitting = args.splitting
 
-    collate_fn = ClassificationCollator(dataset.classes, max_sequence_length)
+    collate_fn = ClassificationCollator(dataset.classes, max_sequence_length, path_to_tokenizer, splitting)
     loader_train = DataLoader(train_set, batch_size=batch_size, collate_fn=collate_fn)
     loader_val = DataLoader(val_set, batch_size=batch_size, collate_fn=collate_fn)
     logger.info(f"DataLoaders are initialized with {batch_size=}, {max_sequence_length=}")

@@ -21,6 +21,15 @@ def setup_logging(verbose, experiment_name):
         level=logging.DEBUG if verbose else logging.INFO
     )
 
+def str2bool(v):
+        if isinstance(v, bool):
+            return v
+        if v.lower() in ('yes', 'true', 't', 'y', '1'):
+            return True
+        elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+            return False
+        else:
+            raise argparse.ArgumentTypeError('Boolean value expected.')
 
 def parse_args(notebook=False, request=""):
     parser = argparse.ArgumentParser(
@@ -85,6 +94,8 @@ def parse_args(notebook=False, request=""):
         help="number of epochs for learning codeparrot model (and for scheduler)")
     codeparrot_params.add_argument('--device', type=str, default=DEVICE,
         help='device for codeparrot finetune')
+    codeparrot_params.add_argument('--splitting', type=str2bool, default=SPLITTING,
+        help="enabled / disabled splitting of document (to encounter document ending in long documents)")
 
     # saving params
     saving_params = parser.add_argument_group("Saving params")

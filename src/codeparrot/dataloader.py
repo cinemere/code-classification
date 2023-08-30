@@ -22,13 +22,19 @@ class ClassificationCollator(object):
     max_sequence_length: int
     labelencoder : LabelEncoder
 
-    def __init__(self, classes : List[str], max_sequence_length : int = None) -> None:
+    def __init__(self, 
+        classes : List[str], 
+        max_sequence_length : int = None, 
+        path_to_tokenizer : str = PATH_CODEPARROT,
+        splitting : bool = False
+        ) -> None:
+        self.splitting = splitting
         self.labelencoder = LabelEncoder().fit(classes)
-        self.setup_tokenizer()
+        self.setup_tokenizer(path_to_tokenizer)
         self.max_sequence_length = self.tokenizer.model_max_length if max_sequence_length is None else max_sequence_length
 
-    def setup_tokenizer(self, path : str = PATH_CODEPARROT):
-        self.tokenizer = GPT2Tokenizer.from_pretrained(PATH_CODEPARROT)
+    def setup_tokenizer(self, path_to_tokenizer : str = PATH_CODEPARROT):
+        self.tokenizer = GPT2Tokenizer.from_pretrained(path_to_tokenizer)
         # default to left padding
         self.tokenizer.padding_side = "left"
         # Define PAD Token = EOS Token = 50256
@@ -69,8 +75,25 @@ class ClassificationCollator(object):
         rawtext = self.decode_whitespaces(text)
         return rawtext
 
+    def pick_best_part_of_long_sequences(self, texts: List[str]) -> str:
+        left = int(0.2 * self.max_sequence_length)
+        right = self.max_sequence_length - left
+
+        def pick_best_part(text):
+            if len(text) > self.max_sequence_length:
+                return text[:left] + text[-right:]
+            else:
+                return text
+
+        return [pick_best_part(text) for text in texts]
+
+
     def encode_batch(self, rawtexts : List[str]) -> torch.Tensor:
         texts = [self.encode_whitespaces(rawtext) for rawtext in rawtexts]
+
+        if self.splitting:
+            texts = self.pick_best_part_of_long_sequences(texts)
+
         tokens = self.tokenizer(
             text=texts, 
             truncation=True,
